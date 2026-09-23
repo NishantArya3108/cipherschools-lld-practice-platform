@@ -116,7 +116,9 @@ export default function Practice() {
 
         <h3>Constraints</h3>
         <ul className="compact-list">
-          {problem.constraints.map((r) => <li key={r}>{r}</li>)}
+          {(problem.constraints ?? []).map((r) => (
+  <li key={r}>{r}</li>
+))}
         </ul>
       </aside>
 

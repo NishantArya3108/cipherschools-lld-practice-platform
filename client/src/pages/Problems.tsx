@@ -31,7 +31,9 @@ export default function Problems() {
           <article className="problem-card" key={problem.id}>
             <div className="problem-card-top">
               <span className="badge">{problem.difficulty}</span>
-              <span className="muted">{problem.concepts.slice(0, 2).join(" · ")}</span>
+              <span className="muted">
+                  {(problem.concepts ?? []).slice(0, 2).join(" · ") || "Core LLD concepts"}
+              </span>
             </div>
             <h2>{problem.title}</h2>
             <p>{problem.description}</p>

@@ -51,7 +51,9 @@ export default function ProblemDetails() {
         <section className="panel">
           <h2>Constraints</h2>
           <ul className="bullet-list">
-            {problem.constraints.map((item) => <li key={item}>{item}</li>)}
+            {(problem.constraints ?? []).map((item) => (
+  <li key={item}>{item}</li>
+))}
           </ul>
         </section>
       </div>
@@ -59,7 +61,9 @@ export default function ProblemDetails() {
       <section className="panel">
         <h2>Concepts to think about</h2>
         <div className="chips">
-          {problem.concepts.map((concept) => <span className="chip" key={concept}>{concept}</span>)}
+          {(problem.concepts ?? []).map((concept) => (
+  <span className="chip" key={concept}>{concept}</span>
+))}
         </div>
       </section>
 
