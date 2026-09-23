@@ -20,7 +20,14 @@ export async function getProblems(): Promise<Problem[]> {
 
 export async function getProblem(id: string): Promise<Problem> {
   const response = await api.get(`/problems/${id}`);
-  return response.data.data;
+
+  const problem = response.data?.data ?? response.data;
+
+  if (!problem || typeof problem !== "object") {
+    throw new Error("Invalid problem response from server");
+  }
+
+  return problem as Problem;
 }
 
 export async function createAttempt(problemId: string): Promise<Attempt> {
