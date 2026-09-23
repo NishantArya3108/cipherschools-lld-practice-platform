@@ -4,10 +4,18 @@ import type { Attempt, Evaluation, Problem, ClassDefinition, Relationship } from
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api"
 });
-
 export async function getProblems(): Promise<Problem[]> {
   const response = await api.get("/problems");
-  return response.data.data;
+
+  const problems = Array.isArray(response.data)
+    ? response.data
+    : response.data?.data;
+
+  if (!Array.isArray(problems)) {
+    throw new Error("Invalid problems response from server");
+  }
+
+  return problems;
 }
 
 export async function getProblem(id: string): Promise<Problem> {
