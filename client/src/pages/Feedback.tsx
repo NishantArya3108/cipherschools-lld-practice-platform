@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, Loader2, RefreshCw, AlertTriangle } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getAttempt } from "../api";
+import { getAttempt, retryEvaluation } from "../api";
 import type { Attempt, Evaluation, Problem } from "../types";
 
 type FeedbackData = { attempt: Attempt; problem: Problem; evaluation: Evaluation | null };
@@ -12,6 +12,7 @@ export default function Feedback() {
   const [data, setData] = useState<FeedbackData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,7 +48,7 @@ export default function Feedback() {
   }
 
   if (attempt.status === "FAILED") {
-    return <div className="container page narrow"><div className="error-state"><AlertTriangle /><h1>Evaluation failed</h1><p>{evaluation?.errorMessage || "Your design was saved, but evaluation failed."}</p><Link className="button primary" to={\`/practice/\${attempt.id}\`}>Return to attempt</Link></div></div>;
+    return <div className="container page narrow"><div className="error-state"><AlertTriangle /><h1>Evaluation failed</h1><p>{evaluation?.errorMessage || "Your design was saved, but evaluation failed."}</p><div className="actions"><button className="button primary" disabled={retrying} onClick={async () => { try { setRetrying(true); await retryEvaluation(attempt.id); window.location.reload(); } catch (err) { setError(err instanceof Error ? err.message : "Retry failed."); setRetrying(false); } }}>{retrying ? "Retrying..." : "Retry evaluation"}</button><Link className="button secondary" to={\`/practice/\${attempt.id}\`}>Return to attempt</Link></div>{error && <div className="notice">{error}</div>}</div></div>;
   }
 
   const result = evaluation?.result;
