@@ -19,12 +19,13 @@ export type Problem = {
   requirements: string[];
   constraints: string[];
   concepts: string[];
+  createdAt?: string;
 };
 
 export type Attempt = {
   id: string;
   problemId: string;
-  status: string;
+  status: "DRAFT" | "SUBMITTED" | "EVALUATING" | "COMPLETED" | "FAILED" | string;
   requirementsUnderstanding: string;
   classes: ClassDefinition[];
   relationships: Relationship[];
