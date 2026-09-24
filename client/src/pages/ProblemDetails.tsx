@@ -26,7 +26,7 @@ export default function ProblemDetails() {
     setError("");
     try {
       const attempt = await createAttempt(id);
-      navigate(\`/practice/\${attempt.id}\`);
+      navigate(`/practice/${attempt.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start attempt.");
     } finally {
