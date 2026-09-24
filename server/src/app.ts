@@ -324,10 +324,7 @@ app.post("/api/attempts/:id/retry", (req, res) => {
   const row = getAttempt(req.params.id);
 
   if (!row) {
-    return res.status(404).json({
-      success: false,
-      message: "Attempt not found"
-    });
+    return res.status(404).json({ success: false, message: "Attempt not found" });
   }
 
   if (row.status !== "FAILED") {
@@ -337,20 +334,42 @@ app.post("/api/attempts/:id/retry", (req, res) => {
     });
   }
 
-  db.prepare(`
-    UPDATE attempts SET status = 'EVALUATING', updated_at = ? WHERE id = ?
-  `).run(now(), row.id);
+  const problemRow = db.prepare("SELECT * FROM problems WHERE id = ?").get(row.problem_id) as any;
+  const submission: SubmissionContent = {
+    requirementsUnderstanding: row.requirements_understanding,
+    classes: JSON.parse(row.classes_json),
+    relationships: JSON.parse(row.relationships_json),
+    explanation: row.explanation
+  };
 
-  db.prepare(`
-    UPDATE evaluations
-    SET status = 'EVALUATING', error_message = NULL, updated_at = ?
-    WHERE attempt_id = ?
-  `).run(now(), row.id);
+  db.prepare("UPDATE attempts SET status = 'EVALUATING', updated_at = ? WHERE id = ?").run(now(), row.id);
+  db.prepare("UPDATE evaluations SET status = 'EVALUATING', error_message = NULL, updated_at = ? WHERE attempt_id = ?").run(now(), row.id);
 
-  return res.json({
-    success: true,
-    message: "Evaluation retry started."
+  setImmediate(async () => {
+    try {
+      const result = await evaluator.evaluate(
+        {
+          title: problemRow.title,
+          requirements: JSON.parse(problemRow.requirements),
+          constraints: JSON.parse(problemRow.constraints),
+          concepts: JSON.parse(problemRow.concepts)
+        },
+        submission
+      );
+
+      db.prepare("UPDATE evaluations SET status = 'COMPLETED', result_json = ?, error_message = NULL, updated_at = ? WHERE attempt_id = ?")
+        .run(JSON.stringify(result), now(), row.id);
+      db.prepare("UPDATE attempts SET status = 'COMPLETED', updated_at = ? WHERE id = ?")
+        .run(now(), row.id);
+    } catch (error) {
+      db.prepare("UPDATE evaluations SET status = 'FAILED', error_message = ?, updated_at = ? WHERE attempt_id = ?")
+        .run(String(error), now(), row.id);
+      db.prepare("UPDATE attempts SET status = 'FAILED', updated_at = ? WHERE id = ?")
+        .run(now(), row.id);
+    }
   });
+
+  return res.json({ success: true, message: "Evaluation retry started." });
 });
 
 export default app;
