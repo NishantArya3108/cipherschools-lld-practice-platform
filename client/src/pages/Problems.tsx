@@ -42,7 +42,7 @@ export default function Problems() {
             </div>
             <h2>{problem.title}</h2>
             <p>{problem.description}</p>
-            <Link className="text-link" to={\`/problems/\${problem.id}\`}>
+            <Link className="text-link" to={`/problems/${problem.id}`}>
               View problem <ArrowRight size={16} />
             </Link>
           </article>
