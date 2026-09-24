@@ -18,7 +18,7 @@ export async function getProblems(): Promise<Problem[]> {
 }
 
 export async function getProblem(id: string): Promise<Problem> {
-  const problem = unwrap<Problem>(await api.get(\`/problems/\${id}\`));
+  const problem = unwrap<Problem>(await api.get(`/problems/${id}`));
   if (!problem || typeof problem !== "object") throw new Error("Invalid problem response from server");
   return problem;
 }
@@ -34,7 +34,7 @@ export async function getAttempt(id: string): Promise<{
   problem: Problem;
   evaluation: Evaluation | null;
 }> {
-  return unwrap(await api.get(\`/attempts/\${id}\`));
+  return unwrap(await api.get(`/attempts/${id}`));
 }
 
 export async function saveDraft(id: string, payload: {
@@ -43,11 +43,11 @@ export async function saveDraft(id: string, payload: {
   relationships: Relationship[];
   explanation: string;
 }): Promise<Attempt> {
-  return unwrap(await api.put(\`/attempts/\${id}/draft\`, payload));
+  return unwrap(await api.put(`/attempts/${id}/draft`, payload));
 }
 
 export async function submitAttempt(id: string): Promise<Attempt> {
-  return unwrap(await api.post(\`/attempts/\${id}/submit\`));
+  return unwrap(await api.post(`/attempts/${id}/submit`));
 }
 
 export async function getAttempts(): Promise<Attempt[]> {
