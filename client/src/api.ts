@@ -2,67 +2,56 @@ import axios from "axios";
 import type { Attempt, Evaluation, Problem, ClassDefinition, Relationship } from "./types";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+  baseURL: "http://localhost:5000/api",
+  timeout: 10000
 });
+
+function unwrap<T>(response: { data: unknown }): T {
+  const body = response.data as any;
+  return (body?.data ?? body) as T;
+}
+
 export async function getProblems(): Promise<Problem[]> {
-  const response = await api.get("/problems");
-
-  const problems = Array.isArray(response.data)
-    ? response.data
-    : response.data?.data;
-
-  if (!Array.isArray(problems)) {
-    throw new Error("Invalid problems response from server");
-  }
-
-  return problems;
+  const problems = unwrap<unknown[]>(await api.get("/problems"));
+  if (!Array.isArray(problems)) throw new Error("Invalid problems response from server");
+  return problems as Problem[];
 }
 
 export async function getProblem(id: string): Promise<Problem> {
-  const response = await api.get(`/problems/${id}`);
-
-  const problem = response.data?.data ?? response.data;
-
-  if (!problem || typeof problem !== "object") {
-    throw new Error("Invalid problem response from server");
-  }
-
-  return problem as Problem;
+  const problem = unwrap<Problem>(await api.get(\`/problems/\${id}\`));
+  if (!problem || typeof problem !== "object") throw new Error("Invalid problem response from server");
+  return problem;
 }
 
 export async function createAttempt(problemId: string): Promise<Attempt> {
-  const response = await api.post("/attempts", { problemId });
-  return response.data.data;
+  const attempt = unwrap<Attempt>(await api.post("/attempts", { problemId }));
+  if (!attempt?.id) throw new Error("Invalid attempt response from server");
+  return attempt;
 }
 
-export async function getAttempt(id: string) {
-  const response = await api.get(`/attempts/${id}`);
-  return response.data.data as {
-    attempt: Attempt;
-    problem: Problem;
-    evaluation: Evaluation | null;
-  };
+export async function getAttempt(id: string): Promise<{
+  attempt: Attempt;
+  problem: Problem;
+  evaluation: Evaluation | null;
+}> {
+  return unwrap(await api.get(\`/attempts/\${id}\`));
 }
 
-export async function saveDraft(
-  id: string,
-  payload: {
-    requirementsUnderstanding: string;
-    classes: ClassDefinition[];
-    relationships: Relationship[];
-    explanation: string;
-  }
-): Promise<Attempt> {
-  const response = await api.put(`/attempts/${id}/draft`, payload);
-  return response.data.data;
+export async function saveDraft(id: string, payload: {
+  requirementsUnderstanding: string;
+  classes: ClassDefinition[];
+  relationships: Relationship[];
+  explanation: string;
+}): Promise<Attempt> {
+  return unwrap(await api.put(\`/attempts/\${id}/draft\`, payload));
 }
 
 export async function submitAttempt(id: string): Promise<Attempt> {
-  const response = await api.post(`/attempts/${id}/submit`);
-  return response.data.data;
+  return unwrap(await api.post(\`/attempts/\${id}/submit\`));
 }
 
 export async function getAttempts(): Promise<Attempt[]> {
-  const response = await api.get("/attempts");
-  return response.data.data;
+  const attempts = unwrap<unknown[]>(await api.get("/attempts"));
+  if (!Array.isArray(attempts)) throw new Error("Invalid attempts response from server");
+  return attempts as Attempt[];
 }
