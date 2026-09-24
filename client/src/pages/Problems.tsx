@@ -7,37 +7,42 @@ import type { Problem } from "../types";
 export default function Problems() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getProblems().then(setProblems).finally(() => setLoading(false));
+    getProblems()
+      .then(setProblems)
+      .catch((err) => setError(err instanceof Error ? err.message : "Could not load problems."))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return <div className="center-state"><Loader2 className="spin" /> Loading problems...</div>;
+  if (loading) return <div className="center-state"><Loader2 className="spin" /> Loading problems...</div>;
+
+  if (error) {
+    return <div className="container page narrow"><div className="error-state">
+      <h1>Could not load problems</h1><p>{error}</p>
+      <p>Make sure the backend is running at http://localhost:5000.</p>
+    </div></div>;
   }
 
   return (
     <div className="container page">
-      <div className="page-heading">
-        <div>
-          <div className="eyebrow">PROBLEM LIBRARY</div>
-          <h1>Choose a design challenge</h1>
-          <p>Start small. Build a design you can explain.</p>
-        </div>
-      </div>
+      <div className="page-heading"><div>
+        <div className="eyebrow">PROBLEM LIBRARY</div>
+        <h1>Choose a design challenge</h1>
+        <p>Start small. Build a design you can explain.</p>
+      </div></div>
 
       <div className="problem-grid">
         {problems.map((problem) => (
           <article className="problem-card" key={problem.id}>
             <div className="problem-card-top">
               <span className="badge">{problem.difficulty}</span>
-              <span className="muted">
-                  {(problem.concepts ?? []).slice(0, 2).join(" · ") || "Core LLD concepts"}
-              </span>
+              <span className="muted">{problem.concepts.slice(0, 2).join(" · ")}</span>
             </div>
             <h2>{problem.title}</h2>
             <p>{problem.description}</p>
-            <Link className="text-link" to={`/problems/${problem.id}`}>
+            <Link className="text-link" to={\`/problems/\${problem.id}\`}>
               View problem <ArrowRight size={16} />
             </Link>
           </article>
