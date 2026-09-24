@@ -55,3 +55,7 @@ export async function getAttempts(): Promise<Attempt[]> {
   if (!Array.isArray(attempts)) throw new Error("Invalid attempts response from server");
   return attempts as Attempt[];
 }
+
+export async function retryEvaluation(id: string): Promise<void> {
+  await api.post(`/attempts/${id}/retry`);
+}
