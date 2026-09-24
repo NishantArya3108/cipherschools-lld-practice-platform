@@ -24,8 +24,8 @@ export default function HistoryPage() {
       ) : (
         <div className="history-list">{attempts.map((attempt) => (
           <article className="history-card" key={attempt.id}>
-            <div><span className="muted">{new Date(attempt.updatedAt).toLocaleString()}</span><h2>{attempt.problemTitle}</h2><span className={\`status \${attempt.status.toLowerCase()}\`}>{attempt.status}</span></div>
-            <Link className="button secondary" to={attempt.status === "COMPLETED" ? \`/feedback/\${attempt.id}\` : \`/practice/\${attempt.id}\`}>Open <ArrowRight size={16} /></Link>
+            <div><span className="muted">{new Date(attempt.updatedAt).toLocaleString()}</span><h2>{attempt.problemTitle}</h2><span className={`status ${attempt.status.toLowerCase()}`}>{attempt.status}</span></div>
+            <Link className="button secondary" to={attempt.status === "COMPLETED" ? `/feedback/${attempt.id}` : `/practice/${attempt.id}`}>Open <ArrowRight size={16} /></Link>
           </article>
         ))}</div>
       )}
